@@ -1,0 +1,74 @@
+@inherits LayoutComponentBase
+
+<MudThemeProvider Theme="@_theme" @bind-IsDarkMode="_isDarkMode" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="0" Class="top-app-bar">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
+        <MudTextField T="string" Placeholder="Search..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                       Class="search-box ml-4" Variant="Variant.Outlined" Margin="Margin.Dense" />
+        <MudSpacer />
+        <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" Color="Color.Inherit" OnClick="@ToggleTheme" />
+        <MudBadge Content="3" Color="Color.Error" Overlap="true" Class="mx-2">
+            <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" />
+        </MudBadge>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Class="ml-2" Spacing="1">
+            <MudAvatar Color="Color.Primary">A</MudAvatar>
+            <MudStack Spacing="0" Class="d-none d-md-flex">
+                <MudText Typo="Typo.body2" Class="font-weight-bold">Admin</MudText>
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">Super Admin</MudText>
+            </MudStack>
+        </MudStack>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="0" Variant="DrawerVariant.Mini" OpenMiniOnHover="false" Class="ems-sidebar">
+        <NavMenu />
+    </MudDrawer>
+
+    <MudMainContent Class="ems-main-content">
+        <MudContainer MaxWidth="MaxWidth.False" Class="pa-4">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+    private bool _isDarkMode = false;
+
+    private MudTheme _theme = new MudTheme
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = "#594AE2",
+            Secondary = "#29C7AC",
+            AppbarBackground = "#FFFFFF",
+            Background = "#F4F5FA",
+            DrawerBackground = "#1C1B33",
+            DrawerText = "#C9C7E0",
+            Success = "#29C7AC",
+            Warning = "#FFB547",
+            Error = "#FF6B8B",
+            Info = "#4FB7FF"
+        },
+        PaletteDark = new PaletteDark
+        {
+            Primary = "#7C6FF0",
+            Secondary = "#29C7AC",
+            Background = "#13121F",
+            Surface = "#1C1B33",
+            DrawerBackground = "#13121F",
+            AppbarBackground = "#1C1B33"
+        },
+        LayoutProperties = new LayoutProperties
+        {
+            DefaultBorderRadius = "14px"
+        }
+    };
+
+    private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+    private void ToggleTheme() => _isDarkMode = !_isDarkMode;
+}

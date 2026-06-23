@@ -1,0 +1,161 @@
+@page "/employees/{Id:int}"
+@inject IEmployeeService EmployeeService
+@inject IAttendanceService AttendanceService
+@inject ILeaveService LeaveService
+@inject IPerformanceService PerformanceService
+@inject NavigationManager Nav
+
+<PageTitle>Employee Details - EMS</PageTitle>
+
+@if (_employee is null)
+{
+    <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+        <div>
+            <MudText Typo="Typo.h5" Class="font-weight-bold">Employee Details</MudText>
+            <MudText Typo="Typo.body2" Class="mud-text-secondary">Home &gt; Employees &gt; Details</MudText>
+        </div>
+        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => Nav.NavigateTo("/employees"))">Back</MudButton>
+    </MudStack>
+
+    <MudGrid Spacing="3">
+        <MudItem xs="12" md="4">
+            <MudPaper Class="profile-card" Elevation="0">
+                <MudAvatar Size="Size.Large" Style="width:96px;height:96px;">
+                    <MudImage Src="@_employee.ProfilePictureUrl" />
+                </MudAvatar>
+                <MudText Typo="Typo.h6" Class="font-weight-bold mt-3">@_employee.FullName</MudText>
+                <MudText Typo="Typo.body2" Class="mud-text-secondary">@_employee.RoleTitle</MudText>
+                <MudChip T="string" Size="Size.Small" Class="status-chip-active mt-2">@_employee.Status</MudChip>
+
+                <MudDivider Class="my-4" />
+                <MudStack Spacing="2" Class="text-left">
+                    <MudStack Row="true" Spacing="2"><MudIcon Icon="@Icons.Material.Filled.Email" Size="Size.Small" /><MudText Typo="Typo.body2">@_employee.Email</MudText></MudStack>
+                    <MudStack Row="true" Spacing="2"><MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" /><MudText Typo="Typo.body2">@_employee.Phone</MudText></MudStack>
+                    <MudStack Row="true" Spacing="2"><MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" /><MudText Typo="Typo.body2">@_employee.Location</MudText></MudStack>
+                </MudStack>
+
+                <MudDivider Class="my-4" />
+                <MudGrid Spacing="1">
+                    <MudItem xs="6" Class="text-left">
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">Employee ID</MudText>
+                        <MudText Typo="Typo.body2" Class="font-weight-bold">@_employee.EmployeeCode</MudText>
+                    </MudItem>
+                    <MudItem xs="6" Class="text-left">
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">Department</MudText>
+                        <MudText Typo="Typo.body2" Class="font-weight-bold">@_employee.DepartmentName</MudText>
+                    </MudItem>
+                    <MudItem xs="6" Class="text-left">
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">Date of Joining</MudText>
+                        <MudText Typo="Typo.body2" Class="font-weight-bold">@_employee.JoiningDate.ToString("MMM d, yyyy")</MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="8">
+            <MudPaper Class="section-card" Elevation="0">
+                <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pt-4">
+                    <MudTabPanel Text="Overview">
+                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-1">About</MudText>
+                        <MudText Typo="Typo.body2" Class="mb-4">@_employee.About</MudText>
+
+                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-1">Skills</MudText>
+                        <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Class="mb-4">
+                            @foreach (var skill in _employee.Skills)
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary">@skill</MudChip>
+                            }
+                        </MudStack>
+
+                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-1">Recent Performance</MudText>
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+                            <MudProgressLinear Color="Color.Success" Value="@(_employee.PerformanceRating * 20)" Class="flex-grow-1" Size="Size.Medium" Rounded="true" />
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">@_employee.PerformanceRating.ToString("0.0")/5</MudText>
+                        </MudStack>
+
+                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-2">Leave Balance</MudText>
+                        <MudGrid Spacing="2">
+                            <MudItem xs="4"><MudPaper Class="pa-3 text-center" Elevation="0" Style="border-radius:12px;background:#F4F5FA;"><MudText Typo="Typo.h6" Class="font-weight-bold">@_employee.AnnualLeaveBalance</MudText><MudText Typo="Typo.caption">Annual Leave</MudText></MudPaper></MudItem>
+                            <MudItem xs="4"><MudPaper Class="pa-3 text-center" Elevation="0" Style="border-radius:12px;background:#F4F5FA;"><MudText Typo="Typo.h6" Class="font-weight-bold">@_employee.SickLeaveBalance</MudText><MudText Typo="Typo.caption">Sick Leave</MudText></MudPaper></MudItem>
+                            <MudItem xs="4"><MudPaper Class="pa-3 text-center" Elevation="0" Style="border-radius:12px;background:#F4F5FA;"><MudText Typo="Typo.h6" Class="font-weight-bold">@_employee.CasualLeaveBalance</MudText><MudText Typo="Typo.caption">Casual Leave</MudText></MudPaper></MudItem>
+                        </MudGrid>
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="Personal Information">
+                        <MudGrid Spacing="3">
+                            <MudItem xs="6"><MudText Typo="Typo.caption" Class="mud-text-secondary">Date of Birth</MudText><MudText Typo="Typo.body2">@_employee.DateOfBirth.ToString("MMM d, yyyy")</MudText></MudItem>
+                            <MudItem xs="6"><MudText Typo="Typo.caption" Class="mud-text-secondary">Email</MudText><MudText Typo="Typo.body2">@_employee.Email</MudText></MudItem>
+                            <MudItem xs="6"><MudText Typo="Typo.caption" Class="mud-text-secondary">Phone</MudText><MudText Typo="Typo.body2">@_employee.Phone</MudText></MudItem>
+                            <MudItem xs="6"><MudText Typo="Typo.caption" Class="mud-text-secondary">Location</MudText><MudText Typo="Typo.body2">@_employee.Location</MudText></MudItem>
+                        </MudGrid>
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="Documents">
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">No documents uploaded yet.</MudText>
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="Attendance">
+                        <MudTable Items="@_attendance" Dense="true" Hover="true">
+                            <HeaderContent>
+                                <MudTh>Date</MudTh><MudTh>Check-In</MudTh><MudTh>Check-Out</MudTh><MudTh>Hours</MudTh><MudTh>Status</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd>@context.Date.ToString("MMM d")</MudTd>
+                                <MudTd>@(context.CheckIn?.ToString(@"hh\:mm") ?? "-")</MudTd>
+                                <MudTd>@(context.CheckOut?.ToString(@"hh\:mm") ?? "-")</MudTd>
+                                <MudTd>@context.WorkingHours</MudTd>
+                                <MudTd>@context.Status</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="Leave">
+                        <MudTable Items="@_leaves" Dense="true" Hover="true">
+                            <HeaderContent>
+                                <MudTh>Type</MudTh><MudTh>Start</MudTh><MudTh>End</MudTh><MudTh>Status</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd>@context.LeaveType</MudTd>
+                                <MudTd>@context.StartDate.ToString("MMM d")</MudTd>
+                                <MudTd>@context.EndDate.ToString("MMM d")</MudTd>
+                                <MudTd>@context.Status</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="Performance">
+                        @if (_performance is not null)
+                        {
+                            @foreach (var goal in _performance.Goals)
+                            {
+                                <MudText Typo="Typo.body2" Class="mb-1">@goal.Title</MudText>
+                                <MudProgressLinear Color="Color.Primary" Value="@goal.ProgressPercent" Class="mb-3" Rounded="true" />
+                            }
+                        }
+                    </MudTabPanel>
+                </MudTabs>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private EmployeeDetailsDto? _employee;
+    private List<Models.Attendance> _attendance = new();
+    private List<Models.LeaveRequest> _leaves = new();
+    private Models.PerformanceReview? _performance;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _employee = await EmployeeService.GetDetailsAsync(Id);
+        _attendance = await AttendanceService.GetByEmployeeIdAsync(Id);
+        _leaves = await LeaveService.GetByEmployeeIdAsync(Id);
+        _performance = await PerformanceService.GetByEmployeeIdAsync(Id);
+    }
+}

@@ -1,0 +1,14 @@
+@using EmployeeManagementSystem.Models
+
+<MudChip T="string" Size="Size.Small" Class="@ChipClass" Variant="Variant.Filled">@Status</MudChip>
+
+@code {
+    [Parameter] public EmployeeStatus Status { get; set; }
+
+    private string ChipClass => Status switch
+    {
+        EmployeeStatus.Active => "status-chip-active",
+        EmployeeStatus.OnLeave => "status-chip-onleave",
+        _ => "status-chip-inactive"
+    };
+}

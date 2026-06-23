@@ -1,0 +1,128 @@
+@page "/"
+@inject IDashboardService DashboardService
+
+<PageTitle>Dashboard - EMS</PageTitle>
+
+<MudText Typo="Typo.h5" Class="font-weight-bold mb-1">Dashboard</MudText>
+<MudText Typo="Typo.body2" Class="mud-text-secondary mb-4">Welcome back, Admin!</MudText>
+
+@if (_kpi is null)
+{
+    <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <MudGrid Spacing="3" Class="mb-2">
+        <MudItem xs="12" sm="6" md="3">
+            <KpiCard Title="Total Employees" Value="@_kpi.TotalEmployees.ToString()" SubText="+12 this month" Icon="@Icons.Material.Filled.Groups" Color="Color.Primary" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <KpiCard Title="Departments" Value="@_kpi.TotalDepartments.ToString()" SubText="No change" SubTextColor="#8C89B0" Icon="@Icons.Material.Filled.AccountTree" Color="Color.Secondary" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <KpiCard Title="Present Today" Value="@_kpi.PresentToday.ToString()" SubText="@PresentPct" Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <KpiCard Title="On Leave" Value="@_kpi.OnLeaveToday.ToString()" SubText="@LeavePct" SubTextColor="#C77A12" Icon="@Icons.Material.Filled.BeachAccess" Color="Color.Warning" />
+        </MudItem>
+    </MudGrid>
+
+    <MudGrid Spacing="3" Class="mb-2">
+        <MudItem xs="12" md="8">
+            <MudPaper Class="section-card" Elevation="0">
+                <MudStack Row="true" Justify="Justify.SpaceBetween" Class="mb-2">
+                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Employee Trend</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">This Year</MudText>
+                </MudStack>
+                <MudChart ChartType="ChartType.Line" ChartSeries="@_trendSeries" XAxisLabels="@_trendLabels" Width="100%" Height="280px" />
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudPaper Class="section-card" Elevation="0">
+                <MudText Typo="Typo.subtitle1" Class="font-weight-bold mb-2">Employees by Department</MudText>
+                <MudChart ChartType="ChartType.Donut" InputData="@_deptData" InputLabels="@_deptLabels" Width="100%" Height="200px" />
+                <MudStack Spacing="1" Class="mt-3">
+                    @foreach (var d in _deptShare)
+                    {
+                        <MudStack Row="true" Justify="Justify.SpaceBetween">
+                            <MudText Typo="Typo.caption">@d.DepartmentName</MudText>
+                            <MudText Typo="Typo.caption" Class="font-weight-bold">@d.Percentage%</MudText>
+                        </MudStack>
+                    }
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <MudGrid Spacing="3">
+        <MudItem xs="12" md="6">
+            <MudPaper Class="section-card" Elevation="0">
+                <MudText Typo="Typo.subtitle1" Class="font-weight-bold mb-2">Recent Hires</MudText>
+                @foreach (var hire in _recentHires)
+                {
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="py-2">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudAvatar><MudImage Src="@hire.ProfilePictureUrl" /></MudAvatar>
+                            <MudStack Spacing="0">
+                                <MudText Typo="Typo.body2" Class="font-weight-bold">@hire.FullName</MudText>
+                                <MudText Typo="Typo.caption" Class="mud-text-secondary">@hire.RoleTitle</MudText>
+                            </MudStack>
+                        </MudStack>
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">@hire.JoiningDate.ToString("MMM d, yyyy")</MudText>
+                    </MudStack>
+                }
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="section-card" Elevation="0">
+                <MudText Typo="Typo.subtitle1" Class="font-weight-bold mb-2">Upcoming Birthdays</MudText>
+                @foreach (var bday in _birthdays)
+                {
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="py-2">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudAvatar><MudImage Src="@bday.ProfilePictureUrl" /></MudAvatar>
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">@bday.FullName</MudText>
+                        </MudStack>
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">@bday.DateOfBirth.ToString("MMM d")</MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.CardGiftcard" Color="Color.Warning" Size="Size.Small" />
+                        </MudStack>
+                    </MudStack>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private DashboardKpiDto? _kpi;
+    private List<DepartmentShareDto> _deptShare = new();
+    private List<RecentHireDto> _recentHires = new();
+    private List<UpcomingBirthdayDto> _birthdays = new();
+
+    private List<ChartSeries> _trendSeries = new();
+    private string[] _trendLabels = Array.Empty<string>();
+    private double[] _deptData = Array.Empty<double>();
+    private string[] _deptLabels = Array.Empty<string>();
+
+    private string PresentPct => _kpi is null || _kpi.TotalEmployees == 0 ? "" : $"{Math.Round(_kpi.PresentToday * 100.0 / _kpi.TotalEmployees)}% of total";
+    private string LeavePct => _kpi is null || _kpi.TotalEmployees == 0 ? "" : $"{Math.Round(_kpi.OnLeaveToday * 100.0 / _kpi.TotalEmployees)}% of total";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _kpi = await DashboardService.GetKpisAsync();
+        var trend = await DashboardService.GetMonthlyTrendAsync();
+        _trendLabels = trend.Select(t => t.Month).ToArray();
+        _trendSeries = new List<ChartSeries>
+        {
+            new ChartSeries { Name = "Employees", Data = trend.Select(t => (double)t.EmployeeCount).ToArray() }
+        };
+
+        _deptShare = await DashboardService.GetDepartmentShareAsync();
+        _deptData = _deptShare.Select(d => (double)d.Count).ToArray();
+        _deptLabels = _deptShare.Select(d => d.DepartmentName).ToArray();
+
+        _recentHires = await DashboardService.GetRecentHiresAsync();
+        _birthdays = await DashboardService.GetUpcomingBirthdaysAsync();
+    }
+}

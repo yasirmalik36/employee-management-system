@@ -1,0 +1,11 @@
+@page "/logout"
+@inject NavigationManager Nav
+
+<PageTitle>Logout - EMS</PageTitle>
+
+<MudPaper Class="section-card text-center pa-8" Elevation="0" Style="max-width:420px;margin:80px auto;">
+    <MudIcon Icon="@Icons.Material.Filled.Logout" Size="Size.Large" Color="Color.Primary" Class="mb-3" />
+    <MudText Typo="Typo.h6" Class="font-weight-bold mb-2">You've been logged out</MudText>
+    <MudText Typo="Typo.body2" Class="mud-text-secondary mb-4">Thanks for using the Employee Management System.</MudText>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => Nav.NavigateTo("/"))">Back to Dashboard</MudButton>
+</MudPaper>

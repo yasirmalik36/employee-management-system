@@ -1,0 +1,10 @@
+@page "/Error"
+@using System.Diagnostics
+
+<PageTitle>Error - EMS</PageTitle>
+
+<MudText Typo="Typo.h4" Class="ma-4">Something went wrong.</MudText>
+<MudText Typo="Typo.body2" Class="ma-4 mud-text-secondary">Request ID: @Activity.Current?.Id</MudText>
+
+@code {
+}

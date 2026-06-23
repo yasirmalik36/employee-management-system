@@ -1,0 +1,85 @@
+@page "/departments"
+@inject IDepartmentService DepartmentService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>Departments - EMS</PageTitle>
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <div>
+        <MudText Typo="Typo.h5" Class="font-weight-bold">Departments</MudText>
+        <MudText Typo="Typo.body2" Class="mud-text-secondary">Manage organization departments</MudText>
+    </div>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenAddDialog">Add Department</MudButton>
+</MudStack>
+
+<MudGrid Spacing="3">
+    @foreach (var dept in _departments)
+    {
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="section-card" Elevation="0">
+                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
+                    <MudAvatar Style="@($"background:{dept.ColorHex}22;color:{dept.ColorHex};border-radius:14px;")">
+                        <MudIcon Icon="@Icons.Material.Filled.AccountTree" />
+                    </MudAvatar>
+                    <MudStack Row="true">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => OpenEditDialog(dept))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDepartment(dept.Id))" />
+                    </MudStack>
+                </MudStack>
+                <MudText Typo="Typo.h6" Class="font-weight-bold mt-3">@dept.Name</MudText>
+                <MudText Typo="Typo.body2" Class="mud-text-secondary mb-2">@dept.Description</MudText>
+                <MudText Typo="Typo.caption" Class="font-weight-bold">@dept.EmployeeCount employees</MudText>
+            </MudPaper>
+        </MudItem>
+    }
+</MudGrid>
+
+@code {
+    private List<Models.Department> _departments = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load() => _departments = await DepartmentService.GetAllAsync();
+
+    private async Task OpenAddDialog()
+    {
+        var parameters = new DialogParameters<DepartmentDialog> { { x => x.Department, new Models.Department() } };
+        var dialog = await DialogService.ShowAsync<DepartmentDialog>("Add Department", parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await DepartmentService.CreateAsync((Models.Department)result.Data!);
+            Snackbar.Add("Department added", Severity.Success);
+            await Load();
+        }
+    }
+
+    private async Task OpenEditDialog(Models.Department dept)
+    {
+        var clone = new Models.Department { Id = dept.Id, Name = dept.Name, Description = dept.Description, ColorHex = dept.ColorHex };
+        var parameters = new DialogParameters<DepartmentDialog> { { x => x.Department, clone } };
+        var dialog = await DialogService.ShowAsync<DepartmentDialog>("Edit Department", parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await DepartmentService.UpdateAsync((Models.Department)result.Data!);
+            Snackbar.Add("Department updated", Severity.Success);
+            await Load();
+        }
+    }
+
+    private async Task DeleteDepartment(int id)
+    {
+        var confirmed = await DialogService.ShowMessageBox("Delete Department", "Are you sure?", yesText: "Delete", cancelText: "Cancel");
+        if (confirmed == true)
+        {
+            await DepartmentService.DeleteAsync(id);
+            Snackbar.Add("Department deleted", Severity.Success);
+            await Load();
+        }
+    }
+}

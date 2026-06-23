@@ -1,0 +1,37 @@
+@using FluentValidation
+@inject IValidator<Models.Role> Validator
+
+<MudDialog>
+    <DialogContent>
+        <MudForm Model="@Role" @ref="_form">
+            <MudTextField Label="Role Title" @bind-Value="Role.Title" Variant="Variant.Outlined" Class="mb-3" />
+            <MudSelect T="int" Label="Department" @bind-Value="Role.DepartmentId" Variant="Variant.Outlined" Class="mb-3">
+                @foreach (var d in Departments)
+                {
+                    <MudSelectItem Value="@d.Id">@d.Name</MudSelectItem>
+                }
+            </MudSelect>
+            <MudTextField Label="Description" @bind-Value="Role.Description" Variant="Variant.Outlined" Lines="2" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public Models.Role Role { get; set; } = new();
+    [Parameter] public List<Models.Department> Departments { get; set; } = new();
+
+    private MudForm _form = default!;
+
+    private async Task Submit()
+    {
+        var result = await Validator.ValidateAsync(Role);
+        if (result.IsValid) MudDialog.Close(DialogResult.Ok(Role));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

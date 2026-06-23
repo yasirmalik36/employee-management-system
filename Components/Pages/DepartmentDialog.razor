@@ -1,0 +1,37 @@
+@using FluentValidation
+@inject IValidator<Models.Department> Validator
+
+<MudDialog>
+    <DialogContent>
+        <MudForm Model="@Department" @ref="_form" Validation="@(Department is null ? null : new Func<object, string, Task<IEnumerable<string>>>(ValidateField))">
+            <MudTextField Label="Department Name" @bind-Value="Department.Name" For="@(() => Department.Name)" Variant="Variant.Outlined" Class="mb-3" />
+            <MudTextField Label="Description" @bind-Value="Department.Description" Variant="Variant.Outlined" Lines="2" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public Models.Department Department { get; set; } = new();
+
+    private MudForm _form = default!;
+
+    private async Task<IEnumerable<string>> ValidateField(object model, string propertyName)
+    {
+        var context = new ValidationContext<Models.Department>((Models.Department)model);
+        var result = await Validator.ValidateAsync(context);
+        return result.Errors.Where(e => e.PropertyName == propertyName).Select(e => e.ErrorMessage);
+    }
+
+    private async Task Submit()
+    {
+        await _form.Validate();
+        if (_form.IsValid) MudDialog.Close(DialogResult.Ok(Department));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

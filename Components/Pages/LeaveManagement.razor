@@ -1,0 +1,80 @@
+@page "/leave-management"
+@inject ILeaveService LeaveService
+@inject ISnackbar Snackbar
+
+<PageTitle>Leave Management - EMS</PageTitle>
+
+<MudText Typo="Typo.h5" Class="font-weight-bold mb-1">Leave Management</MudText>
+<MudText Typo="Typo.body2" Class="mud-text-secondary mb-4">Review and manage employee leave requests</MudText>
+
+<MudPaper Class="section-card rounded-table" Elevation="0">
+    <MudTable Items="@_leaves" Hover="true" Loading="@_loading">
+        <HeaderContent>
+            <MudTh>Employee</MudTh>
+            <MudTh>Leave Type</MudTh>
+            <MudTh>Start Date</MudTh>
+            <MudTh>End Date</MudTh>
+            <MudTh>Days</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.EmployeeName</MudTd>
+            <MudTd>@context.LeaveType</MudTd>
+            <MudTd>@context.StartDate.ToString("MMM d, yyyy")</MudTd>
+            <MudTd>@context.EndDate.ToString("MMM d, yyyy")</MudTd>
+            <MudTd>@context.Days</MudTd>
+            <MudTd>
+                <MudChip T="string" Size="Size.Small" Color="@StatusColor(context.Status)" Variant="Variant.Filled">@context.Status</MudChip>
+            </MudTd>
+            <MudTd>
+                @if (context.Status == Models.LeaveStatus.Pending)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" OnClick="@(() => Approve(context.Id))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Size="Size.Small" OnClick="@(() => Reject(context.Id))" />
+                }
+                else
+                {
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">No actions</MudText>
+                }
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="new int[]{10,25,50}" />
+        </PagerContent>
+    </MudTable>
+</MudPaper>
+
+@code {
+    private List<Models.LeaveRequest> _leaves = new();
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync() => await Load();
+
+    private async Task Load()
+    {
+        _leaves = await LeaveService.GetAllAsync();
+        _loading = false;
+    }
+
+    private async Task Approve(int id)
+    {
+        await LeaveService.ApproveAsync(id);
+        Snackbar.Add("Leave request approved", Severity.Success);
+        await Load();
+    }
+
+    private async Task Reject(int id)
+    {
+        await LeaveService.RejectAsync(id);
+        Snackbar.Add("Leave request rejected", Severity.Error);
+        await Load();
+    }
+
+    private Color StatusColor(Models.LeaveStatus status) => status switch
+    {
+        Models.LeaveStatus.Approved => Color.Success,
+        Models.LeaveStatus.Rejected => Color.Error,
+        _ => Color.Warning
+    };
+}

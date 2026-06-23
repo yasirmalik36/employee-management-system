@@ -1,0 +1,198 @@
+@page "/employees/add"
+@page "/employees/edit/{Id:int}"
+@inject IEmployeeService EmployeeService
+@inject IDepartmentService DepartmentService
+@inject IRoleService RoleService
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+
+<PageTitle>@(Id.HasValue ? "Edit Employee" : "Add Employee") - EMS</PageTitle>
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <div>
+        <MudText Typo="Typo.h5" Class="font-weight-bold">@(Id.HasValue ? "Edit Employee" : "Add Employee")</MudText>
+        <MudText Typo="Typo.body2" Class="mud-text-secondary">Home &gt; Employees &gt; @(Id.HasValue ? "Edit" : "Add")</MudText>
+    </div>
+    <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => Nav.NavigateTo("/employees"))">Back</MudButton>
+</MudStack>
+
+<MudPaper Class="section-card" Elevation="0">
+    <MudText Typo="Typo.subtitle1" Class="font-weight-bold mb-4">Employee Information</MudText>
+
+    <MudForm Model="@_model" @ref="_form" Validation="@(_validator.ValidateValue)">
+        <MudGrid Spacing="3">
+            <MudItem xs="12" md="6">
+                <MudTextField Label="First Name" Required="true" @bind-Value="_model.FirstName"
+                               For="@(() => _model.FirstName)" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSelect T="int" Label="Department" Required="true" @bind-Value="_model.DepartmentId" For="@(() => _model.DepartmentId)" Variant="Variant.Outlined">
+                    @foreach (var d in _departments)
+                    {
+                        <MudSelectItem Value="@d.Id">@d.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField Label="Last Name" Required="true" @bind-Value="_model.LastName"
+                               For="@(() => _model.LastName)" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSelect T="int" Label="Role" Required="true" @bind-Value="_model.RoleId" For="@(() => _model.RoleId)" Variant="Variant.Outlined">
+                    @foreach (var r in _roles.Where(r => _model.DepartmentId == 0 || r.DepartmentId == _model.DepartmentId))
+                    {
+                        <MudSelectItem Value="@r.Id">@r.Title</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField Label="Email" Required="true" @bind-Value="_model.Email"
+                               For="@(() => _model.Email)" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSelect T="int?" Label="Reporting Manager" @bind-Value="_model.ReportingManagerId" Variant="Variant.Outlined" Clearable="true">
+                    @foreach (var m in _managers.Where(m => m.Id != Id))
+                    {
+                        <MudSelectItem Value="@((int?)m.Id)">@m.FullName</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField Label="Phone" Required="true" @bind-Value="_model.Phone"
+                               For="@(() => _model.Phone)" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSelect T="EmploymentType" Label="Employment Type" @bind-Value="_model.EmploymentType" Variant="Variant.Outlined">
+                    @foreach (var t in Enum.GetValues<EmploymentType>())
+                    {
+                        <MudSelectItem Value="@t">@t</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudDatePicker Label="Date of Birth" Required="true" @bind-Date="_dob" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSelect T="EmployeeStatus" Label="Status" @bind-Value="_model.Status" Variant="Variant.Outlined">
+                    @foreach (var s in Enum.GetValues<EmployeeStatus>())
+                    {
+                        <MudSelectItem Value="@s">@s</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudDatePicker Label="Date of Joining" Required="true" @bind-Date="_joining" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.body2" Class="mb-1">Profile Picture</MudText>
+                <MudFileUpload T="IBrowserFile" @bind-Files="_uploadedFile">
+                    <ActivatorContent>
+                        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.UploadFile">Choose File</MudButton>
+                        <MudText Typo="Typo.caption" Class="ml-2 mud-text-secondary">@(_uploadedFile?.Name ?? "No file chosen")</MudText>
+                    </ActivatorContent>
+                </MudFileUpload>
+            </MudItem>
+        </MudGrid>
+
+        <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="2" Class="mt-6">
+            <MudButton Variant="Variant.Outlined" OnClick="@(() => Nav.NavigateTo("/employees"))">Cancel</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@Save">Save</MudButton>
+        </MudStack>
+    </MudForm>
+</MudPaper>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    private MudForm _form = default!;
+    private EmployeeCreateDto _model = new();
+    private DateTime? _dob = DateTime.Today.AddYears(-25);
+    private DateTime? _joining = DateTime.Today;
+    private IBrowserFile? _uploadedFile;
+
+    private List<Models.Department> _departments = new();
+    private List<Models.Role> _roles = new();
+    private List<Models.Employee> _managers = new();
+
+    private readonly Validators.EmployeeCreateDtoValidator _fluentValidator = new();
+    private FluentValidationAdapter _validator = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _validator = new FluentValidationAdapter(_fluentValidator);
+        _departments = await DepartmentService.GetAllAsync();
+        _roles = await RoleService.GetAllAsync();
+        _managers = await EmployeeService.GetManagersAsync();
+
+        if (Id.HasValue)
+        {
+            var existing = await EmployeeService.GetByIdAsync(Id.Value);
+            if (existing is not null)
+            {
+                _model = new EmployeeCreateDto
+                {
+                    FirstName = existing.FirstName,
+                    LastName = existing.LastName,
+                    Email = existing.Email,
+                    Phone = existing.Phone,
+                    DepartmentId = existing.DepartmentId,
+                    RoleId = existing.RoleId,
+                    ReportingManagerId = existing.ReportingManagerId,
+                    EmploymentType = existing.EmploymentType,
+                    Status = existing.Status,
+                    DateOfBirth = existing.DateOfBirth,
+                    JoiningDate = existing.JoiningDate
+                };
+                _dob = existing.DateOfBirth;
+                _joining = existing.JoiningDate;
+            }
+        }
+    }
+
+    private async Task Save()
+    {
+        _model.DateOfBirth = _dob ?? DateTime.Today.AddYears(-25);
+        _model.JoiningDate = _joining ?? DateTime.Today;
+
+        await _form.Validate();
+        if (!_form.IsValid)
+        {
+            Snackbar.Add("Please fix the validation errors before saving", Severity.Warning);
+            return;
+        }
+
+        if (Id.HasValue)
+        {
+            await EmployeeService.UpdateAsync(Id.Value, _model);
+            Snackbar.Add("Employee updated successfully", Severity.Success);
+        }
+        else
+        {
+            await EmployeeService.CreateAsync(_model);
+            Snackbar.Add("Employee added successfully", Severity.Success);
+        }
+
+        Nav.NavigateTo("/employees");
+    }
+
+    /// <summary>Bridges FluentValidation's AbstractValidator to MudBlazor's per-field Validation func.</summary>
+    private class FluentValidationAdapter
+    {
+        private readonly FluentValidation.IValidator<EmployeeCreateDto> _validator;
+        public FluentValidationAdapter(FluentValidation.IValidator<EmployeeCreateDto> validator) => _validator = validator;
+
+        public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>
+        {
+            var context = new FluentValidation.ValidationContext<EmployeeCreateDto>((EmployeeCreateDto)model);
+            var result = await _validator.ValidateAsync(context);
+            return result.Errors
+                .Where(e => e.PropertyName == propertyName)
+                .Select(e => e.ErrorMessage);
+        };
+    }
+}

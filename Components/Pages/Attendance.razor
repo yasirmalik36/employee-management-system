@@ -1,0 +1,81 @@
+@page "/attendance"
+@inject IAttendanceService AttendanceService
+
+<PageTitle>Attendance - EMS</PageTitle>
+
+<MudText Typo="Typo.h5" Class="font-weight-bold mb-1">Attendance</MudText>
+<MudText Typo="Typo.body2" Class="mud-text-secondary mb-4">Track daily employee attendance</MudText>
+
+<MudPaper Class="section-card mb-4" Elevation="0">
+    <MudGrid Spacing="2">
+        <MudItem xs="12" md="4">
+            <MudTextField T="string" @bind-Value="_search" Placeholder="Search employee..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" />
+        </MudItem>
+        <MudItem xs="12" md="3">
+            <MudDatePicker Label="Date" @bind-Date="_dateFilter" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true" />
+        </MudItem>
+        <MudItem xs="12" md="3">
+            <MudSelect T="string" @bind-Value="_statusFilter" Label="Status" Variant="Variant.Outlined" Margin="Margin.Dense">
+                <MudSelectItem Value="@("All")">All Status</MudSelectItem>
+                @foreach (var s in Enum.GetValues<Models.AttendanceStatus>())
+                {
+                    <MudSelectItem Value="@s.ToString()">@s</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudPaper Class="section-card rounded-table" Elevation="0">
+    <MudTable Items="@Filtered" Hover="true" Dense="false" Loading="@_loading">
+        <HeaderContent>
+            <MudTh>Employee</MudTh>
+            <MudTh>Date</MudTh>
+            <MudTh>Check-In</MudTh>
+            <MudTh>Check-Out</MudTh>
+            <MudTh>Working Hours</MudTh>
+            <MudTh>Status</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.EmployeeName</MudTd>
+            <MudTd>@context.Date.ToString("MMM d, yyyy")</MudTd>
+            <MudTd>@(context.CheckIn?.ToString(@"hh\:mm") ?? "-")</MudTd>
+            <MudTd>@(context.CheckOut?.ToString(@"hh\:mm") ?? "-")</MudTd>
+            <MudTd>@(context.WorkingHours > 0 ? $"{context.WorkingHours}h" : "-")</MudTd>
+            <MudTd>
+                <MudChip T="string" Size="Size.Small" Color="@StatusColor(context.Status)" Variant="Variant.Filled">@context.Status</MudChip>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="new int[]{10,25,50}" />
+        </PagerContent>
+    </MudTable>
+</MudPaper>
+
+@code {
+    private List<Models.Attendance> _records = new();
+    private bool _loading = true;
+    private string _search = "";
+    private DateTime? _dateFilter;
+    private string _statusFilter = "All";
+
+    private IEnumerable<Models.Attendance> Filtered => _records.Where(r =>
+        (string.IsNullOrWhiteSpace(_search) || r.EmployeeName.Contains(_search, StringComparison.OrdinalIgnoreCase)) &&
+        (!_dateFilter.HasValue || r.Date.Date == _dateFilter.Value.Date) &&
+        (_statusFilter == "All" || r.Status.ToString() == _statusFilter));
+
+    protected override async Task OnInitializedAsync()
+    {
+        _records = await AttendanceService.GetAllAsync();
+        _loading = false;
+    }
+
+    private Color StatusColor(Models.AttendanceStatus status) => status switch
+    {
+        Models.AttendanceStatus.Present => Color.Success,
+        Models.AttendanceStatus.Late => Color.Warning,
+        Models.AttendanceStatus.HalfDay => Color.Info,
+        Models.AttendanceStatus.OnLeave => Color.Secondary,
+        _ => Color.Error
+    };
+}

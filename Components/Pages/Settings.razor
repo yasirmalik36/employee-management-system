@@ -1,0 +1,41 @@
+@page "/settings"
+
+<PageTitle>Settings - EMS</PageTitle>
+
+<MudText Typo="Typo.h5" Class="font-weight-bold mb-1">Settings</MudText>
+<MudText Typo="Typo.body2" Class="mud-text-secondary mb-4">Manage your account and application preferences</MudText>
+
+<MudTabs Elevation="0" Rounded="true">
+    <MudTabPanel Text="Profile Settings">
+        <MudGrid Spacing="3" Class="mt-2">
+            <MudItem xs="12" md="6"><MudTextField Label="Full Name" Value="Admin" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudTextField Label="Email" Value="admin@company.com" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudTextField Label="Phone" Value="+1 555 000 0000" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudTextField Label="Job Title" Value="Super Admin" Variant="Variant.Outlined" /></MudItem>
+        </MudGrid>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">Save Changes</MudButton>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Theme Settings">
+        <MudText Typo="Typo.body2" Class="mt-3 mb-2">Toggle dark mode from the navbar icon at any time.</MudText>
+        <MudSwitch T="bool" Label="Compact layout" Color="Color.Primary" />
+    </MudTabPanel>
+
+    <MudTabPanel Text="Notifications">
+        <MudStack Class="mt-3" Spacing="2">
+            <MudSwitch T="bool" Value="true" Label="Email notifications" Color="Color.Primary" />
+            <MudSwitch T="bool" Value="true" Label="Leave request alerts" Color="Color.Primary" />
+            <MudSwitch T="bool" Value="false" Label="Weekly summary report" Color="Color.Primary" />
+        </MudStack>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Password">
+        <MudGrid Spacing="3" Class="mt-2">
+            <MudItem xs="12" md="6"><MudTextField Label="Current Password" InputType="InputType.Password" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"></MudItem>
+            <MudItem xs="12" md="6"><MudTextField Label="New Password" InputType="InputType.Password" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudTextField Label="Confirm Password" InputType="InputType.Password" Variant="Variant.Outlined" /></MudItem>
+        </MudGrid>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">Update Password</MudButton>
+    </MudTabPanel>
+</MudTabs>

@@ -1,0 +1,24 @@
+<MudPaper Class="kpi-card" Elevation="0">
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
+        <MudStack Spacing="1">
+            <MudText Typo="Typo.body2" Class="mud-text-secondary">@Title</MudText>
+            <MudText Typo="Typo.h4" Class="font-weight-bold">@Value</MudText>
+            @if (!string.IsNullOrEmpty(SubText))
+            {
+                <MudText Typo="Typo.caption" Style="@($"color:{SubTextColor}")">@SubText</MudText>
+            }
+        </MudStack>
+        <MudAvatar Color="@Color" Variant="Variant.Filled" Size="Size.Medium" Style="border-radius:14px;">
+            <MudIcon Icon="@Icon" Size="Size.Small" />
+        </MudAvatar>
+    </MudStack>
+</MudPaper>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public string? SubText { get; set; }
+    [Parameter] public string SubTextColor { get; set; } = "#1B9E80";
+    [Parameter] public string Icon { get; set; } = Icons.Material.Filled.People;
+    [Parameter] public Color Color { get; set; } = Color.Primary;
+}

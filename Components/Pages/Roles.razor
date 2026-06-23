@@ -1,0 +1,88 @@
+@page "/roles"
+@inject IRoleService RoleService
+@inject IDepartmentService DepartmentService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>Roles - EMS</PageTitle>
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <div>
+        <MudText Typo="Typo.h5" Class="font-weight-bold">Roles</MudText>
+        <MudText Typo="Typo.body2" Class="mud-text-secondary">Manage job roles across departments</MudText>
+    </div>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenAddDialog">Create Role</MudButton>
+</MudStack>
+
+<MudPaper Class="section-card rounded-table" Elevation="0">
+    <MudTable Items="@_roles" Hover="true">
+        <HeaderContent>
+            <MudTh>Role Title</MudTh>
+            <MudTh>Department</MudTh>
+            <MudTh>Employees</MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Title</MudTd>
+            <MudTd>@DeptName(context.DepartmentId)</MudTd>
+            <MudTd>@context.EmployeeCount</MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => OpenEditDialog(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteRole(context.Id))" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>
+
+@code {
+    private List<Models.Role> _roles = new();
+    private List<Models.Department> _departments = new();
+
+    protected override async Task OnInitializedAsync() => await Load();
+
+    private async Task Load()
+    {
+        _roles = await RoleService.GetAllAsync();
+        _departments = await DepartmentService.GetAllAsync();
+    }
+
+    private string DeptName(int deptId) => _departments.FirstOrDefault(d => d.Id == deptId)?.Name ?? "-";
+
+    private async Task OpenAddDialog()
+    {
+        var parameters = new DialogParameters<RoleDialog> { { x => x.Role, new Models.Role() }, { x => x.Departments, _departments } };
+        var dialog = await DialogService.ShowAsync<RoleDialog>("Create Role", parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await RoleService.CreateAsync((Models.Role)result.Data!);
+            Snackbar.Add("Role created", Severity.Success);
+            await Load();
+        }
+    }
+
+    private async Task OpenEditDialog(Models.Role role)
+    {
+        var clone = new Models.Role { Id = role.Id, Title = role.Title, Description = role.Description, DepartmentId = role.DepartmentId };
+        var parameters = new DialogParameters<RoleDialog> { { x => x.Role, clone }, { x => x.Departments, _departments } };
+        var dialog = await DialogService.ShowAsync<RoleDialog>("Edit Role", parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await RoleService.UpdateAsync((Models.Role)result.Data!);
+            Snackbar.Add("Role updated", Severity.Success);
+            await Load();
+        }
+    }
+
+    private async Task DeleteRole(int id)
+    {
+        var confirmed = await DialogService.ShowMessageBox("Delete Role", "Are you sure?", yesText: "Delete", cancelText: "Cancel");
+        if (confirmed == true)
+        {
+            await RoleService.DeleteAsync(id);
+            Snackbar.Add("Role deleted", Severity.Success);
+            await Load();
+        }
+    }
+}

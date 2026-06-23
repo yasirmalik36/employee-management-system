@@ -1,0 +1,74 @@
+@page "/reports"
+@inject IDashboardService DashboardService
+
+<PageTitle>Reports - EMS</PageTitle>
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <div>
+        <MudText Typo="Typo.h5" Class="font-weight-bold">Reports</MudText>
+        <MudText Typo="Typo.body2" Class="mud-text-secondary">Home &gt; Reports</MudText>
+    </div>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Download">Export</MudButton>
+</MudStack>
+
+<MudTabs Elevation="0" Rounded="true" Class="mb-4">
+    <MudTabPanel Text="Employee Report">
+        @if (_summary is not null)
+        {
+            <MudGrid Spacing="3" Class="mb-4 mt-2">
+                <MudItem xs="12" sm="6" md="3"><KpiCard Title="Total Employees" Value="@_summary.TotalEmployees.ToString()" Icon="@Icons.Material.Filled.Groups" Color="Color.Primary" /></MudItem>
+                <MudItem xs="12" sm="6" md="3"><KpiCard Title="Active Employees" Value="@_summary.ActiveEmployees.ToString()" Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" /></MudItem>
+                <MudItem xs="12" sm="6" md="3"><KpiCard Title="New Hires" Value="@_summary.NewHires.ToString()" Icon="@Icons.Material.Filled.PersonAdd" Color="Color.Info" /></MudItem>
+                <MudItem xs="12" sm="6" md="3"><KpiCard Title="Attrition Rate" Value="@($"{_summary.AttritionRate}%")" Icon="@Icons.Material.Filled.TrendingDown" Color="Color.Error" /></MudItem>
+            </MudGrid>
+        }
+
+        <MudGrid Spacing="3">
+            <MudItem xs="12" md="6">
+                <MudPaper Class="section-card" Elevation="0">
+                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold mb-2">Employees by Department</MudText>
+                    <MudChart ChartType="ChartType.Bar" ChartSeries="@_deptSeries" XAxisLabels="@_deptLabels" Width="100%" Height="260px" />
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudPaper Class="section-card" Elevation="0">
+                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold mb-2">Gender Distribution</MudText>
+                    <MudChart ChartType="ChartType.Donut" InputData="@_genderData" InputLabels="@_genderLabels" Width="100%" Height="260px" />
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Attendance Report">
+        <MudText Typo="Typo.body2" Class="mud-text-secondary mt-4">Attendance summary charts and exports go here.</MudText>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Leave Report">
+        <MudText Typo="Typo.body2" Class="mud-text-secondary mt-4">Leave summary charts and exports go here.</MudText>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Performance Report">
+        <MudText Typo="Typo.body2" Class="mud-text-secondary mt-4">Performance summary charts and exports go here.</MudText>
+    </MudTabPanel>
+</MudTabs>
+
+@code {
+    private DTOs.ReportSummaryDto? _summary;
+    private List<ChartSeries> _deptSeries = new();
+    private string[] _deptLabels = Array.Empty<string>();
+    private double[] _genderData = Array.Empty<double>();
+    private string[] _genderLabels = Array.Empty<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _summary = await DashboardService.GetReportSummaryAsync();
+
+        var deptShare = await DashboardService.GetDepartmentShareAsync();
+        _deptLabels = deptShare.Select(d => d.DepartmentName).ToArray();
+        _deptSeries = new List<ChartSeries> { new ChartSeries { Name = "Employees", Data = deptShare.Select(d => (double)d.Count).ToArray() } };
+
+        var gender = await DashboardService.GetGenderDistributionAsync();
+        _genderLabels = gender.Select(g => $"{g.Gender} ({g.Percentage}%)").ToArray();
+        _genderData = gender.Select(g => (double)g.Count).ToArray();
+    }
+}
