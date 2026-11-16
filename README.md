@@ -1,6 +1,8 @@
 # Employee Management System (EMS)
 
-A modern, professional SaaS-style HRMS built with **.NET 8**, **Blazor Web App (Interactive Server)**, and **MudBlazor**, modeled after the provided dashboard/employees/details/add-employee/reports screenshot.
+[![CI](https://github.com/yasirmalik36/employee-management-system/actions/workflows/ci.yml/badge.svg)](https://github.com/yasirmalik36/employee-management-system/actions/workflows/ci.yml)
+
+A modern, professional SaaS-style HRMS built with **.NET 8**, **Blazor Web App (Interactive Server)**, and **MudBlazor**. It covers employees, departments, roles, attendance, leave, performance reviews and reports, and runs out of the box on seeded demo data.
 
 ## Tech Stack
 - .NET 8 / Blazor Web App (Interactive Server render mode)
@@ -68,7 +70,5 @@ wwwroot/css/   app.css (SaaS theme: rounded cards, sidebar gradient, status chip
 - Fully async service methods, constructor-injected interfaces throughout (DI-friendly clean architecture)
 
 ## Notes
-- All data is **mock/seeded in-memory** per the brief ("initially use fake/mock data"); see `Data/InMemoryDataStore.cs` to adjust the seed dataset.
+- All data is **seeded demo data held in memory**; see `Data/InMemoryDataStore.cs` to adjust the dataset.
 - Avatars use `https://i.pravatar.cc` placeholder images — swap with real upload storage when wiring up a backend.
-- This solution was authored without a local .NET SDK to compile against, so please run `dotnet build` after `dotnet restore` and let me know if anything needs adjusting — happy to fix any compile issues.
-"# employee-management-system" 
