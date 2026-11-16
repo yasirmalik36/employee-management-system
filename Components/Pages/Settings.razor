@@ -8,10 +8,10 @@
 <MudTabs Elevation="0" Rounded="true">
     <MudTabPanel Text="Profile Settings">
         <MudGrid Spacing="3" Class="mt-2">
-            <MudItem xs="12" md="6"><MudTextField Label="Full Name" Value="Admin" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="6"><MudTextField Label="Email" Value="admin@company.com" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="6"><MudTextField Label="Phone" Value="+1 555 000 0000" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="6"><MudTextField Label="Job Title" Value="Super Admin" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudTextField T="string" Label="Full Name" Value="@("Admin")" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudTextField T="string" Label="Email" Value="@("admin@company.com")" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudTextField T="string" Label="Phone" Value="@("+1 555 000 0000")" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudTextField T="string" Label="Job Title" Value="@("Super Admin")" Variant="Variant.Outlined" /></MudItem>
         </MudGrid>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">Save Changes</MudButton>
     </MudTabPanel>
