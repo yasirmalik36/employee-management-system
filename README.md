@@ -4,6 +4,18 @@
 
 A modern, professional SaaS-style HRMS built with **.NET 8**, **Blazor Web App (Interactive Server)**, and **MudBlazor**. It covers employees, departments, roles, attendance, leave, performance reviews and reports, and runs out of the box on seeded demo data.
 
+## 📸 Screenshots
+
+Captured from the running app (in-memory sample data) by the [Refresh screenshots](.github/workflows/screenshots.yml) workflow.
+
+| Dashboard | Employees |
+|---|---|
+| ![Dashboard with employee trend and department split](docs/screenshots/dashboard.png) | ![Employee directory with filters](docs/screenshots/employees.png) |
+| **Attendance** | **Leave management** |
+| ![Daily attendance with status tags](docs/screenshots/attendance.png) | ![Leave requests with approvals](docs/screenshots/leave.png) |
+| **Performance** | **Departments** |
+| ![Performance goals and ratings](docs/screenshots/performance.png) | ![Department cards](docs/screenshots/departments.png) |
+
 ## Tech Stack
 - .NET 8 / Blazor Web App (Interactive Server render mode)
 - MudBlazor (UI components, theming, charts)
